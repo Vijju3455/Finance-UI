@@ -1,0 +1,8 @@
+/* Global styles - Tailwind via CDN in index.html */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
