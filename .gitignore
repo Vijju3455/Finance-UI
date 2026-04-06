@@ -45,3 +45,5 @@ Thumbs.db
 .env 
 TODO.md 
 .prettierrc 
+.editorconfig 
+.gitignore 
