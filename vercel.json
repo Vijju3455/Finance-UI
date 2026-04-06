@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "dist/finance-dashboard",
   "routes": [
     { "src": "/(.*)", "dest": "/index.html" }
   ]
