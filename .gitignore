@@ -1,4 +1,4 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+ fr# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output
 /dist
@@ -45,5 +45,4 @@ Thumbs.db
 .env 
 TODO.md 
 .prettierrc 
-.editorconfig 
-.gitignore 
+.editorconfig
