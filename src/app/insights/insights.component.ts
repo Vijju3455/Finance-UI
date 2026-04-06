@@ -1,6 +1,8 @@
-import { Component, inject, computed, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, computed, AfterViewInit, ViewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '../services/state.service';
+
+declare const Chart: any;
 
 @Component({
   selector: 'app-insights',
@@ -15,21 +17,24 @@ export class InsightsComponent implements AfterViewInit {
   @ViewChild('pieChart') pieChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('barChart') barChart!: ElementRef<HTMLCanvasElement>;
 
+  private pieChartInstance: any = null;
+  private barChartInstance: any = null;
+
   incomeRatio = computed(() => {
-    const income = this.state.totalIncome();
-    const expenses = this.state.totalExpense();
+    const income = this.state.filteredTotalIncome();
+    const expenses = this.state.filteredTotalExpense();
     return income > 0 && expenses > 0 ? (income / expenses).toFixed(1) : '0';
   });
 
   topCategory = computed(() => {
-    const breakdown = this.state.categoryBreakdown();
+    const breakdown = this.state.filteredCategoryBreakdown();
     return breakdown.length > 0 ? breakdown[0][0] : 'None';
   });
 
-  categorySummary = computed(() => {
+  filteredCategorySummary = computed(() => {
     const summary: Record<string, { amount: number; count: number }> = {};
 
-    this.state.transactions().forEach(tx => {
+    this.state.filteredTransactions().forEach(tx => {
       if (tx.type === 'expense') {
         const cat = tx.category;
         if (!summary[cat]) summary[cat] = { amount: 0, count: 0 };
@@ -42,6 +47,15 @@ export class InsightsComponent implements AfterViewInit {
       .sort(([, a], [, b]) => b.amount - a.amount)
       .slice(0, 10);
   });
+
+  categorySummary = computed(() => this.filteredCategorySummary());
+
+  constructor() {
+    effect(() => {
+      this.state.filteredTransactions();
+      setTimeout(() => this.updateCharts(), 100);
+    });
+  }
 
   ngAfterViewInit(): void {
     const script = document.createElement('script');
@@ -60,26 +74,46 @@ export class InsightsComponent implements AfterViewInit {
   }
 
   initCharts(): void {
-    if (!this.pieChart?.nativeElement || !this.barChart?.nativeElement) return;
+    this.createPieChart();
+    this.createBarChart();
+  }
 
-    const pieCtx = this.pieChart.nativeElement.getContext('2d')!;
-    const pieData = this.state.categoryBreakdown().slice(0, 6);
+  createPieChart(): void {
+    if (this.pieChartInstance) {
+      this.pieChartInstance.destroy();
+    }
 
-    const pieInstance = new (window as any).Chart(pieCtx, {
+    const ctx = this.pieChart?.nativeElement?.getContext('2d') as CanvasRenderingContext2D | null;
+    if (!ctx) return;
+
+    const pieData = this.state.filteredCategoryBreakdown().slice(0, 6);
+    const selectedCategory = this.state.selectedCategory();
+
+    this.pieChartInstance = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: pieData.map(([cat]) => cat),
         datasets: [{
           data: pieData.map(([, amt]) => amt),
-          backgroundColor: ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#06B6D4'],
-          borderWidth: 0
+          backgroundColor: pieData.map(([cat]) => 
+            cat === selectedCategory ? '#FBBF24' : ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#06B6D4'][pieData.findIndex(([c]) => c === cat) % 6]
+          ),
+          borderWidth: 3,
+          borderColor: pieData.map(([cat]) => cat === selectedCategory ? '#F59E0B' : '#ffffff'),
+          hoverBorderWidth: 0
         }]
       },
-      options: { 
-        responsive: true, 
-        plugins: { 
-          legend: { 
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
             position: 'bottom',
+            labels: {
+              padding: 25,
+              usePointStyle: true
+            },
             onClick: (e: any, elements: any[], chart: any) => {
               const index = elements[0]?.index;
               if (index !== undefined) {
@@ -87,19 +121,41 @@ export class InsightsComponent implements AfterViewInit {
                 this.setCategoryFilter(category);
               }
             }
-          } 
-        } 
+          }
+        }
       }
     });
+  }
 
-    const barCtx = this.barChart.nativeElement.getContext('2d')!;
-    new (window as any).Chart(barCtx, {
+  createBarChart(): void {
+    if (this.barChartInstance) {
+      this.barChartInstance.destroy();
+    }
+
+    const ctx = this.barChart?.nativeElement?.getContext('2d') as CanvasRenderingContext2D | null;
+    if (!ctx) return;
+
+    this.barChartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['Income', 'Expenses'],
-        datasets: [{ data: [this.state.totalIncome(), this.state.totalExpense()], backgroundColor: ['#10B981', '#EF4444'], borderRadius: 8 }]
+        datasets: [{
+          data: [this.state.filteredTotalIncome(), this.state.filteredTotalExpense()],
+          backgroundColor: ['#10B981', '#EF4444'],
+          borderRadius: 8
+        }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
     });
+  }
+
+  updateCharts(): void {
+    this.createPieChart();
+    this.createBarChart();
   }
 }

@@ -40,8 +40,8 @@ declare const Chart: any;
         <!-- Pie Chart -->
         <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
           <h3 class="text-2xl font-bold mb-8 text-gray-900 dark:text-white">📊 Spending Breakdown</h3>
-          <div class="h-80 flex items-center justify-center">
-            <canvas #pieChart class="max-h-full w-auto"></canvas>
+          <div class="aspect-video flex items-center justify-center">
+            <canvas #pieChart class="w-full h-full"></canvas>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@ export class DashboardOverviewComponent implements AfterViewInit {
     const ctx = this.trendChart?.nativeElement?.getContext('2d') as CanvasRenderingContext2D | null;
     if (!ctx) return;
 
-    const txs = this.state.transactions()
+    const txs = this.state.filteredTransactions()
       .slice()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
@@ -175,7 +175,8 @@ export class DashboardOverviewComponent implements AfterViewInit {
     const ctx = this.pieChart?.nativeElement?.getContext('2d') as CanvasRenderingContext2D | null;
     if (!ctx) return;
 
-    const categories = this.state.categoryBreakdown().slice(0, 6);
+    const categories = this.state.filteredCategoryBreakdown().slice(0, 6);
+    const selectedCategory = this.state.selectedCategory();
 
     this.pieChartInstance = new Chart(ctx, {
       type: 'doughnut',
@@ -183,12 +184,11 @@ export class DashboardOverviewComponent implements AfterViewInit {
         labels: categories.map(([cat]) => cat),
         datasets: [{
           data: categories.map(([, amt]) => amt),
-          backgroundColor: [
-            '#EF4444', '#F59E0B', '#10B981', 
-            '#3B82F6', '#8B5CF6', '#EC4899'
-          ],
-          borderWidth: 2,
-          borderColor: '#ffffff',
+          backgroundColor: categories.map(([cat]) => 
+            cat === selectedCategory ? '#FBBF24' : ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'][Math.min(categories.findIndex(([c]) => c === cat), 5)] || '#EF4444'
+          ),
+          borderWidth: 3,
+          borderColor: categories.map(([cat]) => cat === selectedCategory ? '#F59E0B' : '#ffffff'),
           hoverBorderWidth: 0
         }]
       },
@@ -214,9 +214,12 @@ export class DashboardOverviewComponent implements AfterViewInit {
                     return {
                       text: label + ': $' + value.toLocaleString() + ' (' + percentage + '%)',
                       fillStyle: data.datasets[0].backgroundColor[i],
-                      strokeStyle: '#fff',
-                      lineWidth: 2,
-                      pointStyle: 'circle'
+                      strokeStyle: data.datasets[0].borderColor[i] || '#fff',
+                      lineWidth: 3,
+                      pointStyle: 'circle',
+                      font: {
+                        weight: label === selectedCategory ? 'bold' : 'normal'
+                      }
                     };
                   });
                 }
