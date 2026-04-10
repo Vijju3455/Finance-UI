@@ -1,117 +1,143 @@
-
 <div class="p-8 min-h-screen bg-gradient-to-br from-slate-50 to-indigo-100 dark:from-slate-900 dark:to-slate-950">
-  <div class="max-w-7xl mx-auto space-y-8">
+  <div class="max-w-7xl mx-auto space-y-12">
 
     <!-- Title -->
-    <div class="text-center">
-      <h1 class="text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Insights</h1>
-      <p class="mt-4 text-xl text-gray-600 dark:text-gray-300">Your financial analysis dashboard</p>
+    <div class="text-center pb-12">
+      <h1 class="text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">Insights</h1>
+      <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Your financial analysis dashboard with key observations</p>
     </div>
 
-    <!-- Key Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="group bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/50 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
-        <div class="text-4xl font-black mb-1">$ {{ state.totalBalance() | number:'1.0-0' }}</div>
-        <p class="text-sm text-gray-600 font-medium">Net Balance</p>
+    <!-- 1. Main Insights - TOP PRIORITY -->
+    <section>
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Key Observations</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Highest Spending -->
+        <div class="group bg-gradient-to-br from-amber-500/95 to-orange-600/95 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/60 hover:shadow-3xl hover:-translate-y-4 transition-all duration-700 text-center h-full">
+          <div class="text-6xl mb-8 group-hover:scale-110 transition-all duration-500 mx-auto">💸</div>
+          <h3 class="text-3xl font-black mb-6 text-white drop-shadow-lg">Highest Spending</h3>
+          <p class="text-2xl font-extrabold text-white/95 leading-none">{{ highestSpendingDetails() }}</p>
+        </div>
+
+        <!-- Expenses Trend -->
+        <div class="group bg-gradient-to-br from-emerald-500/95 to-teal-600/95 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/60 hover:shadow-3xl hover:-translate-y-4 transition-all duration-700 text-center h-full">
+          <div class="text-6xl mb-8 group-hover:scale-110 transition-all duration-500 mx-auto">📈</div>
+          <h3 class="text-3xl font-black mb-6 text-white drop-shadow-lg">Monthly Trend</h3>
+          <p class="text-xl font-bold text-white/95 leading-snug">{{ expenseTrend() }}</p>
+        </div>
+
+        <!-- Most Transactions -->
+        <div class="group bg-gradient-to-br from-violet-500/95 to-indigo-600/95 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/60 hover:shadow-3xl hover:-translate-y-4 transition-all duration-700 text-center h-full">
+          <div class="text-6xl mb-8 group-hover:scale-110 transition-all duration-500 mx-auto">🛒</div>
+          <h3 class="text-3xl font-black mb-6 text-white drop-shadow-lg">Most Transactions</h3>
+          <p class="text-2xl font-extrabold text-white/95 leading-none">{{ mostTransactionsCategory() }}</p>
+        </div>
       </div>
+    </section>
 
-      <div class="group bg-gradient-to-br from-emerald-400/90 to-teal-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">📈</div>
-        <div class="text-4xl font-black mb-1">{{ incomeRatio() }}x</div>
-        <p class="text-white/95 font-medium text-sm">Income Ratio</p>
+    <!-- 2. Charts Section -->
+    <section>
+      <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">Visual Breakdown</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/60">
+          <h3 class="text-2xl font-bold text-gray-900 mb-8 text-center">Spending Breakdown</h3>
+          <div class="aspect-[4/3] flex items-center justify-center">
+            <canvas #pieChart></canvas>
+          </div>
+        </div>
+        <div class="bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/60">
+          <h3 class="text-2xl font-bold text-gray-900 mb-8 text-center">Income vs Expenses</h3>
+          <div class="aspect-[4/3] flex items-center justify-center">
+            <canvas #barChart></canvas>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="group bg-gradient-to-br from-red-400/90 to-rose-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎯</div>
-        <div class="text-4xl font-black mb-1">{{ topCategory() }}</div>
-        <p class="text-white/95 font-medium text-sm">Top Category</p>
-      </div>
-
-      <div class="group bg-gradient-to-br from-violet-400/90 to-indigo-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</div>
-        <div class="text-4xl font-black mb-1">{{ state.transactions().length }}</div>
-        <p class="text-white/95 font-medium text-sm">Total Transactions</p>
-      </div>
-    </div>
-
-    <!-- Charts -->
-    <!-- Charts -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-  
-  <!-- Pie Chart -->
-  <div class="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
-    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
-      Spending Breakdown
-    </h3>
-    <div class="aspect-video flex items-center justify-center">
-      <canvas #pieChart></canvas>
-    </div>
-  </div>
-
-  <!-- Bar Chart -->
-  <div class="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
-    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
-      Income vs Expenses
-    </h3>
-    <div class="aspect-video flex items-center justify-center">
-      <canvas #barChart></canvas>
-    </div>
-  </div>
-
-</div>
-
-    <!-- Detailed Table -->
-    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
-      <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-8 border-b">
-        <h3 class="text-2xl font-bold text-gray-900">Category Analysis</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th>
-              <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Total Spent</th>
-              <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Transactions</th>
-              <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Avg Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of categorySummary(); let i = index" class="hover:bg-gray-50 border-b last:border-b-0">
-              <td class="px-6 py-4 whitespace-nowrap cursor-pointer group hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-all duration-200" 
-                    [class]="state.selectedCategory() === entry[0] ? 'bg-indigo-100 dark:bg-indigo-900 font-bold border-r-4 border-indigo-500' : ''"
-                    (click)="setCategoryFilter(entry[0])">
-                <div class="flex items-center">
-                  <div class="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 mr-3 group-hover:scale-110 transition-transform"></div>
-                  <span class="font-medium text-gray-900 group-hover:text-indigo-700 dark:group-hover:text-indigo-400">{{ entry[0] }}</span>
-                  <span *ngIf="state.selectedCategory() === entry[0]" class="ml-2 text-indigo-600 font-bold text-sm">✓</span>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-lg font-bold text-gray-900">
-                ${{ entry[1].amount | number:'1.0-0' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-600">
-                {{ entry[1].count }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-emerald-600">
-                ${{ (entry[1].amount / entry[1].count) | number:'1.0-0' }}
-              </td>
-            </tr>
-            <tr *ngIf="categorySummary().length === 0">
-              <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                <div class="flex flex-col items-center space-y-2">
-                  <div class="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center">
-                    <span class="text-2xl">📊</span>
+    <!-- 3. Category Analysis Table -->
+    <section>
+      <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/70">
+        <div class="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-xl border-b border-white/50 p-8">
+          <h3 class="text-3xl font-bold text-gray-900 flex items-center">
+            <div class="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center text-2xl mr-4 text-white shadow-lg">📋</div>
+            Category Analysis
+          </h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50/50">
+              <tr>
+                <th class="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-4 text-right text-sm font-bold text-gray-800 uppercase tracking-wider">Total Spent</th>
+                <th class="px-6 py-4 text-right text-sm font-bold text-gray-800 uppercase tracking-wider">Transactions</th>
+                <th class="px-6 py-4 text-right text-sm font-bold text-gray-800 uppercase tracking-wider">Avg Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entry of categorySummary(); let i = index" class="hover:bg-indigo-50 border-b border-gray-100 transition-all duration-200" 
+                  [class]="state.selectedCategory() === entry[0] ? 'bg-indigo-100 font-bold border-indigo-200' : ''">
+                <td class="px-6 py-6 whitespace-nowrap cursor-pointer group" (click)="setCategoryFilter(entry[0])">
+                  <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 mr-4 group-hover:scale-125 transition-transform duration-200 shadow-sm"></div>
+                    <span class="font-semibold text-gray-900 group-hover:text-indigo-700 text-lg">{{ entry[0] }}</span>
+                    <span *ngIf="state.selectedCategory() === entry[0]" class="ml-3 text-indigo-600 font-bold text-lg">✓</span>
                   </div>
-                  <p class="text-lg font-medium">No data available</p>
-                  <p class="text-sm">Add some transactions to see insights</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="px-6 py-6 text-right font-mono text-xl font-bold text-gray-900">
+                  ${{ entry[1].amount | number:'1.0-0' }}
+                </td>
+                <td class="px-6 py-6 text-right text-lg font-semibold text-gray-700">
+                  {{ entry[1].count }}
+                </td>
+                <td class="px-6 py-6 text-right text-lg font-semibold text-emerald-600">
+                  ${{ (entry[1].amount / entry[1].count) | number:'1.0-0' }}
+                </td>
+              </tr>
+              <tr *ngIf="categorySummary().length === 0">
+                <td colspan="4" class="px-6 py-16 text-center text-gray-500">
+                  <div class="flex flex-col items-center space-y-4">
+                    <div class="w-20 h-20 bg-gray-200 rounded-3xl flex items-center justify-center">
+                      <span class="text-3xl">📊</span>
+                    </div>
+                    <p class="text-2xl font-semibold">No data available</p>
+                    <p class="text-lg">Add transactions to see detailed analysis</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- 4. Key Metrics (Optional - Bottom) -->
+    <section class="pt-12 border-t border-gray-200/50">
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Quick Stats</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="group bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/50 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 text-center">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
+          <div class="text-4xl font-black text-gray-900 mb-2">$ {{ state.totalBalance() | number:'1.0-0' }}</div>
+          <p class="text-lg text-gray-600 font-semibold">Net Balance</p>
+        </div>
+
+        <div class="group bg-gradient-to-br from-emerald-400/90 to-teal-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 text-center">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</div>
+          <div class="text-4xl font-black text-white mb-2">{{ incomeRatio() }}x</div>
+          <p class="text-lg text-white/95 font-semibold">Income Ratio</p>
+        </div>
+
+        <div class="group bg-gradient-to-br from-red-400/90 to-rose-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 text-center">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">🎯</div>
+          <div class="text-3xl font-black text-white mb-2">{{ topCategory() }}</div>
+          <p class="text-lg text-white/95 font-semibold">Top Category</p>
+        </div>
+
+        <div class="group bg-gradient-to-br from-violet-400/90 to-indigo-500/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 text-center">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📈</div>
+          <div class="text-4xl font-black text-white mb-2">{{ state.transactions().length }}</div>
+          <p class="text-lg text-white/95 font-semibold">Total Transactions</p>
+        </div>
+      </div>
+    </section>
 
   </div>
 </div>

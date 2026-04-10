@@ -50,6 +50,45 @@ export class InsightsComponent implements AfterViewInit {
 
   categorySummary = computed(() => this.filteredCategorySummary());
 
+  highestSpendingDetails = computed(() => {
+    const breakdown = this.state.filteredCategoryBreakdown();
+    if (breakdown.length === 0) return 'No data';
+    const [category, amount] = breakdown[0];
+    return `${category} ($${amount.toLocaleString()})`;
+  });
+
+  mostTransactionsCategory = computed(() => {
+    const summary: Record<string, number> = {};
+    this.state.filteredTransactions().forEach(tx => {
+      if (tx.type === 'expense') {
+        summary[tx.category] = (summary[tx.category] || 0) + 1;
+      }
+    });
+    const entries = Object.entries(summary);
+    if (entries.length === 0) return 'No data';
+    const [[category, count]] = entries.sort(([,a], [,b]) => b - a);
+    return `${category} (${count} txns)`;
+  });
+
+  expenseTrend = computed(() => {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const prevMonth = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+    
+    const currentExpenses = this.state.filteredTransactions()
+      .filter(tx => tx.date.startsWith(currentMonth) && tx.type === 'expense')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const prevExpenses = this.state.filteredTransactions()
+      .filter(tx => tx.date.startsWith(prevMonth) && tx.type === 'expense')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    
+    if (prevExpenses === 0) return 'First month with data';
+    const increase = ((currentExpenses - prevExpenses) / prevExpenses * 100);
+    if (increase > 0) return `Expenses increased this month (+${Math.round(increase)}%)`;
+    if (increase < 0) return `Expenses decreased this month (${Math.round(increase)}%)`;
+    return 'Expenses stable this month';
+  });
+
   constructor() {
     effect(() => {
       this.state.filteredTransactions();
